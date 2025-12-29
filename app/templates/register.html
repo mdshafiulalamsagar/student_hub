@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <h2 style="text-align: center; color: #1877f2;">Create Account</h2>
+    
+    <form action="/register" method="post">
+        <label>Username</label>
+        <input type="text" name="username" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        
+        <label>Email</label>
+        <input type="email" name="email" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        
+        <label>Password</label>
+        <input type="password" name="password" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        
+        <label>University</label>
+        <input type="text" name="university" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+
+        <button type="submit" style="width: 100%; background: #1877f2; color: white; padding: 10px; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
+            Sign Up
+        </button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 15px;">
+        Already have an account? <a href="/login" style="color: #1877f2;">Login here</a>
+    </p>
+</div>
+{% endblock %}

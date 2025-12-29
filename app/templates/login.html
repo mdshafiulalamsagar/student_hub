@@ -1,0 +1,28 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <h2 style="text-align: center; color: #1877f2;">Login</h2>
+    
+    {% if error %}
+    <p style="color: red; text-align: center;">{{ error }}</p>
+    {% endif %}
+
+    <form action="/login" method="post">
+        <label>Email</label>
+        <input type="email" name="email" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        
+        <label>Password</label>
+        <input type="password" name="password" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        
+        <button type="submit" style="width: 100%; background: #1877f2; color: white; padding: 10px; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
+            Login
+        </button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 15px;">
+        New here? <a href="/register" style="color: #1877f2;">Create an account</a>
+    </p>
+</div>
+{% endblock %}
