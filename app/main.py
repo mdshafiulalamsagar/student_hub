@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Request, Form, Depends, status, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -5,7 +6,6 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 import bcrypt
-import os
 import smtplib
 import random
 from email.mime.text import MIMEText
@@ -15,21 +15,33 @@ from supabase import create_client, Client
 from app.database import engine, get_db
 from app.models import models
 
-# টেবিল তৈরি
+# ১. ডাটাবেস টেবিল তৈরি (যদি না থাকে)
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# কনফিগারেশন
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-templates = Jinja2Templates(directory="app/templates")
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+# --- ২. কনফিগারেশন (Static Files Fix for Vercel) ---
+# বর্তমান ফাইলের লোকেশন বের করছি
+script_dir = os.path.dirname(__file__)
+# static ফোল্ডারের পূর্ণ ঠিকানা (Absolute Path) তৈরি করছি
+static_abs_path = os.path.join(script_dir, "static")
 
+# যদি static ফোল্ডার না থাকে, তবে তৈরি করে নিবে (সেফটি চেক)
+if not os.path.isdir(static_abs_path):
+    os.makedirs(static_abs_path)
+
+# Static Files Mount করা
+app.mount("/static", StaticFiles(directory=static_abs_path), name="static")
+
+templates = Jinja2Templates(directory="app/templates")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# ৩. Supabase সেটআপ
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# --- ইমেইল পাঠানোর ফাংশন ---
+# --- ৪. ইমেইল পাঠানোর ফাংশন ---
 def send_email_code(to_email: str, code: str):
     sender_email = os.getenv("MAIL_USERNAME")
     sender_password = os.getenv("MAIL_PASSWORD")
@@ -52,8 +64,9 @@ def send_email_code(to_email: str, code: str):
     except Exception as e:
         print(f"Email Failed: {e}")
 
-# --- Routes ---
+# --- ৫. রাউটস (Routes) ---
 
+# হোমপেজ
 @app.get("/")
 def read_root(request: Request, db: Session = Depends(get_db)):
     user_email = request.cookies.get("user_email")
@@ -62,20 +75,24 @@ def read_root(request: Request, db: Session = Depends(get_db)):
         current_user = db.query(models.User).filter(models.User.email == user_email).first()
     
     all_notes = db.query(models.Resource).order_by(models.Resource.created_at.desc()).all()
-    return templates.TemplateResponse("index.html", {"request": request, "user": current_user, "notes": all_notes})
+    return templates.TemplateResponse("index.html", {
+        "request": request, 
+        "user": current_user, 
+        "notes": all_notes
+    })
 
-# --- REGISTRATION FLOW (NEW) ---
+# --- রেজিস্ট্রেশন ফ্লো (Registration Flow) ---
 
-# 1. ইমেইল পেজ দেখানো
+# ধাপ ১: ইমেইল পেজ দেখানো
 @app.get("/register")
 def verify_email_page(request: Request):
     return templates.TemplateResponse("verify_email.html", {"request": request})
 
-# 2. কোড পাঠানো (এখানে ভার্সিটি মেইল চেক করা হবে)
+# ধাপ ২: কোড পাঠানো (OTP Send)
 @app.post("/send-otp")
 def send_otp(request: Request, email: str = Form(...), db: Session = Depends(get_db)):
-    # ডোমেইন চেকিং
-    allowed_domains = [".edu.bd", ".ac.bd", ".edu"] # লিস্টে আরও ডোমেইন যোগ করতে পারেন
+    # ডোমেইন ভ্যালিডেশন (Domain Check)
+    allowed_domains = [".edu.bd", ".ac.bd", ".edu"] 
     
     is_valid_domain = False
     for domain in allowed_domains:
@@ -91,25 +108,25 @@ def send_otp(request: Request, email: str = Form(...), db: Session = Depends(get
 
     # ডুপ্লিকেট ইমেইল চেক
     if db.query(models.User).filter(models.User.email == email).first():
-         return templates.TemplateResponse("verify_email.html", {"request": request, "error": "Email already registered! Please Login."})
+         return templates.TemplateResponse("verify_email.html", {
+             "request": request, 
+             "error": "Email already registered! Please Login."
+         })
 
-    # কোড জেনারেট
+    # কোড জেনারেট ও সেভ
     code = str(random.randint(100000, 999999))
-    
-    # আগের কোড মুছে ফেলি
     db.query(models.OTP).filter(models.OTP.email == email).delete()
     
-    # নতুন কোড সেভ
     new_otp = models.OTP(email=email, code=code)
     db.add(new_otp)
     db.commit()
     
-    # মেইল পাঠানো
+    # ইমেইল পাঠানো
     send_email_code(email, code)
     
     return templates.TemplateResponse("verify_code.html", {"request": request, "email": email})
 
-# 3. কোড ভেরিফাই করা
+# ধাপ ৩: কোড ভেরিফাই (Verify OTP)
 @app.post("/verify-otp")
 def verify_otp(request: Request, email: str = Form(...), code: str = Form(...), db: Session = Depends(get_db)):
     otp_record = db.query(models.OTP).filter(models.OTP.email == email, models.OTP.code == code).first()
@@ -119,10 +136,9 @@ def verify_otp(request: Request, email: str = Form(...), code: str = Form(...), 
             "request": request, "email": email, "error": "Invalid Code! Try again."
         })
     
-    # কোড সঠিক হলে রেজিস্ট্রেশন ফর্ম দেখাই
     return templates.TemplateResponse("register.html", {"request": request, "email": email})
 
-# 4. ফাইনাল একাউন্ট তৈরি
+# ধাপ ৪: ফাইনাল রেজিস্ট্রেশন (Create Account)
 @app.post("/register")
 def register_final(
     full_name: str = Form(...),
@@ -156,7 +172,7 @@ def register_final(
     
     return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
-# --- Login, Logout, Profile, Upload (Same as before) ---
+# --- লগিন ও লগআউট ---
 @app.get("/login")
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
@@ -176,6 +192,7 @@ def logout():
     response.delete_cookie("user_email")
     return response
 
+# --- প্রোফাইল পেজ ---
 @app.get("/profile")
 def profile_page(request: Request, db: Session = Depends(get_db)):
     user_email = request.cookies.get("user_email")
@@ -184,6 +201,7 @@ def profile_page(request: Request, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_email).first()
     return templates.TemplateResponse("profile.html", {"request": request, "user": user})
 
+# --- ফাইল আপলোড ---
 @app.get("/upload")
 def upload_page(request: Request, db: Session = Depends(get_db)):
     user_email = request.cookies.get("user_email")
@@ -209,7 +227,7 @@ async def upload_file(
         supabase.storage.from_(bucket_name).upload(path=unique_filename, file=file_content, file_options={"content-type": file.content_type})
     except Exception as e:
         print(f"Upload Error: {e}")
-        return "File upload failed!"
+        return "File upload failed! Check Vercel logs."
 
     public_url = supabase.storage.from_(bucket_name).get_public_url(unique_filename)
     new_note = models.Resource(
