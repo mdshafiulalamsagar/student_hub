@@ -23,6 +23,7 @@ class Resource(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
+    course_name = Column(String)
     description = Column(Text, nullable=True)
     file_url = Column(String)  # সুপাবেস স্টোরেজের লিংক
     category = Column(String)  # Note, Question, Suggestion

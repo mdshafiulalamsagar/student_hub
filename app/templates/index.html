@@ -1,12 +1,74 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h1>Welcome to Student Hub!</h1>
-        <p>This is the place where students share notes, questions, and suggestions.</p>
-        <br>
-        <button style="background: #42b72a; color: white; border: none; padding: 10px 20px; font-size: 1rem; border-radius: 5px; cursor: pointer;">
-            Create New Account
-        </button>
+
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 10px; color: var(--text-main);">
+            Find & Share <span style="color: var(--primary);">Best Notes</span>
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+            The smartest way to prepare for exams. Access notes, questions, and suggestions shared by top students.
+        </p>
     </div>
+
+    <h3 style="color: var(--text-main); margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        Latest Uploads
+    </h3>
+
+    {% if notes %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;">
+            
+            {% for note in notes %}
+            <div class="card">
+                <style>
+                    .card {
+                        background: var(--card-bg); /* Dark Card */
+                        border-radius: 16px;
+                        padding: 25px;
+                        border: 1px solid var(--border-color);
+                        transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    }
+                    .card:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); /* Dark Shadow */
+                        border-color: var(--primary);
+                    }
+                </style>
+
+                <div style="margin-bottom: 15px;">
+                    <span style="background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">
+                        {{ note.category }}
+                    </span>
+                </div>
+                
+                <h3 style="margin: 0 0 8px; font-size: 1.25rem; color: var(--text-main);">{{ note.title }}</h3>
+                <p style="margin: 0 0 20px; color: var(--text-muted); font-size: 0.95rem;">
+                    📂 {{ note.course_name }}
+                </p>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 30px; height: 30px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem;">
+                            {{ note.uploader.username[0].upper() if note.uploader else 'U' }}
+                        </div>
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+                            {{ note.uploader.username }}
+                        </span>
+                    </div>
+                    
+                    <a href="{{ note.file_url }}" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600; font-size: 0.9rem;">
+                        View →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 60px; background: var(--card-bg); border-radius: 16px; border: 1px dashed var(--border-color);">
+            <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 20px;">No notes found yet.</p>
+            <a href="/upload" class="btn btn-primary">Be the First to Upload</a>
+        </div>
+    {% endif %}
+
 {% endblock %}
