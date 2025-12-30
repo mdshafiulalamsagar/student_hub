@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 400px; margin: 50px auto; background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color);">
+    <h2 style="text-align: center; color: var(--text-main);">Enter OTP Code</h2>
+    <p style="text-align: center; color: var(--text-muted);">Check inbox of: <b>{{ email }}</b></p>
+    
+    {% if error %}
+    <p style="color: #f87171; text-align: center;">{{ error }}</p>
+    {% endif %}
+
+    <form action="/verify-otp" method="post">
+        <input type="hidden" name="email" value="{{ email }}">
+        
+        <label style="color: var(--text-muted);">6-Digit Code</label>
+        <input type="text" name="code" required style="width: 100%; margin: 10px 0 20px; letter-spacing: 5px; text-align: center; font-size: 1.5rem;">
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Verify & Continue</button>
+    </form>
+</div>
+{% endblock %}

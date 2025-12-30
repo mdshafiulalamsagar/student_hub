@@ -1,28 +1,29 @@
-
 {% extends "base.html" %}
 
 {% block content %}
-<div style="max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-    <h2 style="text-align: center; color: #1877f2;">Login</h2>
+<div style="max-width: 400px; margin: 80px auto; background: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow);">
+    <h2 style="text-align: center; color: var(--text-main); margin-bottom: 30px;">Welcome Back</h2>
     
     {% if error %}
-    <p style="color: red; text-align: center;">{{ error }}</p>
+    <div style="background: rgba(239, 68, 68, 0.1); color: #f87171; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 20px; border: 1px solid rgba(239, 68, 68, 0.2);">
+        {{ error }}
+    </div>
     {% endif %}
 
     <form action="/login" method="post">
-        <label>Email</label>
-        <input type="email" name="email" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        <label style="display: block; margin-bottom: 5px; color: var(--text-muted);">Email</label>
+        <input type="email" name="email" required style="width: 100%; margin-bottom: 15px;">
         
-        <label>Password</label>
-        <input type="password" name="password" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        <label style="display: block; margin-bottom: 5px; color: var(--text-muted);">Password</label>
+        <input type="password" name="password" required style="width: 100%; margin-bottom: 15px;">
         
-        <button type="submit" style="width: 100%; background: #1877f2; color: white; padding: 10px; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px; font-size: 1rem;">
             Login
         </button>
     </form>
     
-    <p style="text-align: center; margin-top: 15px;">
-        New here? <a href="/register" style="color: #1877f2;">Create an account</a>
+    <p style="text-align: center; margin-top: 20px; color: var(--text-muted);">
+        New here? <a href="/register" style="color: var(--primary); text-decoration: none; font-weight: bold;">Create an account</a>
     </p>
 </div>
 {% endblock %}

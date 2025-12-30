@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 500px; margin: 50px auto; background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color);">
+    <h2 style="text-align: center; color: var(--text-main);">Verify University Email</h2>
+    <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">We will send a code to your university email.</p>
+    
+    {% if error %}
+    <p style="color: #f87171; text-align: center; background: rgba(239,68,68,0.1); padding: 5px; border-radius: 5px;">{{ error }}</p>
+    {% endif %}
+
+    <form action="/send-otp" method="post">
+        <label style="color: var(--text-muted);">University Email (ex: .edu.bd)</label>
+        <input type="email" name="email" required style="width: 100%; margin: 10px 0 20px;">
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Verification Code</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 15px;">
+        Already have an account? <a href="/login" style="color: var(--primary);">Login</a>
+    </p>
+</div>
+{% endblock %}

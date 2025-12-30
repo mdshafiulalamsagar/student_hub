@@ -8,10 +8,13 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
-    password = Column(String)  # আমরা পরে এটাকে হ্যাশ করে রাখব
+    password = Column(String)  
     university = Column(String, nullable=True)
+    department = Column(String, nullable=True) 
+    batch = Column(String, nullable=True)      
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # সম্পর্ক: একজন ইউজারের অনেকগুলো নোট থাকতে পারে
@@ -35,3 +38,10 @@ class Resource(Base):
 
     # সম্পর্ক: এই নোটটা কোন ইউজারের
     uploader = relationship("User", back_populates="resources")
+
+class OTP(Base):
+    __tablename__ = "otps"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, index=True)
+    code = Column(String)
